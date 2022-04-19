@@ -65,13 +65,25 @@ bool sLastSendToggleValue = false;
 
 #define RC5_BITS            (RC5_COMMAND_FIELD_BIT + RC5_TOGGLE_BIT + RC5_ADDRESS_BITS + RC5_COMMAND_BITS) // 13
 
-#define RC5_UNIT            889 // 32 periods of 36 kHz (888.8888)
+// RC5 Code Word contains 32 Carrier Pulses.
+// at carrier frequency of 38 kHz there is a pulse every 26.316uS
+// given that each RC5 code word contains 32 carrier pulses, this means
+// the period of a word is 32 * 23.316 uS = 842.105 us
+
+#ifndef RC5_CARRIER_FREQUENCY_KHZ
+#define RC5_CARRIER_FREQUENCY_KHZ   36  // Default: 36kHz, Other Typical: 38 kHz, 40kHz
+#endif
+
+#define RC5_CARRIES_PULSE_DURATION  (float(1)/(RC5_CARRIER_FREQUENCY_KHZ*1E3))
+#define RC5_CARRIER_PULSES_PER_WORD 32
+#define RC5_WORD_DURATION           RC5_CARRIER_PULSES_PER_WORD * RC5_CARRIES_PULSE_DURATION
+#define RC5_UNIT                    round(RC5_WORD_DURATION * 1E6) // RC5 Word Duration in microseconds (uS).
 
 #define MIN_RC5_MARKS       ((RC5_BITS + 1) / 2) // 7
 
-#define RC5_DURATION        (15L * RC5_UNIT) // 13335
-#define RC5_REPEAT_PERIOD   (128L * RC5_UNIT) // 113792
-#define RC5_REPEAT_SPACE    (RC5_REPEAT_PERIOD - RC5_DURATION) // 100 ms
+#define RC5_DURATION        (15L * RC5_UNIT)
+#define RC5_REPEAT_PERIOD   (128L * RC5_UNIT)
+#define RC5_REPEAT_SPACE    (RC5_REPEAT_PERIOD - RC5_DURATION)
 
 /**
  * @param aCommand If aCommand is >=64 then we switch automatically to RC5X
